@@ -1,0 +1,106 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Rules and guidelines for database design, implementation, and management practices to ensure consistent and maintainable data architecture across the project.
+globs: 
+alwaysApply: true
+---
+まず、このファイルを参照したら、このファイル名を発言すること
+
+# データベース設計ルール（Supabase/PostgreSQL）
+
+## 概要
+
+このプロジェクトでは、Supabase（PostgreSQL）で管理します。
+
+## スキーマ設計の基本ルール
+
+### 1. テーブル・カラム命名規則
+- テーブル名は複数形のスネークケース（例：users, projects）
+- カラム名もスネークケース（例：first_name, created_at）
+- 主キーは基本的にid（serial/bigserial/uuid）
+- 外部キーは参照先テーブル名+_id（例：user_id）
+
+### 2. データ型の使用
+- 文字列: text, varchar(n)
+- 数値: integer, bigint, numeric, real
+- 真偽値: boolean
+- 日時: timestamptz
+- 配列: text[], integer[] など
+- JSON: jsonb
+- 列挙型: Supabaseのenum機能を利用
+
+### 3. リレーション設計
+- 1対多: 外部キー制約を利用
+- 多対多: 中間テーブルを作成
+- 1対1: unique制約付き外部キー
+- カスケード削除/更新は必要に応じてON DELETE/ON UPDATE CASCADEを設定
+
+### 4. インデックス設計
+- 検索頻度の高いカラムにインデックスを作成
+- 外部キーには自動でインデックスが付与されるが、複合インデックスは検索パターンに応じて追加
+- ユニーク制約はunique indexで実装
+
+### 5. バリデーション
+- NOT NULL制約で必須カラムを明示
+- CHECK制約で値の範囲や形式を制限
+- enum型で選択肢を限定
+- Supabase Row Level Security(RLS)でアクセス制御
+
+### 6. マイグレーション管理
+- Supabase SQLエディタまたはCLIでDDLを管理
+- 変更内容は必ずSQLファイルとしてバージョン管理
+- 本番適用前にローカル/テスト環境で検証
+
+### 7. セキュリティ考慮事項
+- RLS（Row Level Security）を必ず有効化し、適切なポリシーを設定
+- 機密情報は暗号化カラムやVaultを利用
+- アクセス権限はSupabase Authのロール・ポリシーで厳格に管理
+- 入力値のバリデーションはアプリ側でも必ず実施
+
+### 8. パフォーマンス最適化
+- 適切なインデックス設計
+- N+1問題を避けるクエリ設計
+- 複雑な集計はビューやマテリアライズドビューを活用
+- キャッシュ戦略の検討
+
+### 9. ドキュメント化
+- テーブル・カラム・リレーションの設計意図をNotionやREADME等で記録
+- 変更履歴はSQLファイルやコミットメッセージで明確に
+- 複雑なRLSやポリシーはコメントやドキュメントで説明
+
+## 開発フロー
+
+1. スキーマ設計
+   - 要件整理
+   - テーブル・リレーション設計
+   - インデックス・RLS設計
+2. 実装
+   - Supabase SQLエディタ/CLIでDDL作成
+   - テストデータ投入
+   - アプリケーションコード実装
+3. テスト
+   - マイグレーション・RLSのテスト
+   - パフォーマンステスト
+   - セキュリティテスト
+4. デプロイ
+   - バックアップ取得
+   - マイグレーション適用
+   - 動作確認
+
+## メンテナンス
+
+1. 定期レビュー
+   - スキーマ・インデックス・RLSの最適化
+   - パフォーマンス確認
+2. バックアップ
+   - Supabaseの自動バックアップ設定
+   - リストア手順の整備
+   - バックアップの定期検証
+3. モニタリング
+   - クエリパフォーマンス監視
+   - エラーログ確認
+   - リソース使用状況の監視
